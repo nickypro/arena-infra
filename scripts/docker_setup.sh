@@ -34,7 +34,7 @@ source /opt/conda/etc/profile.d/conda.sh
 
 # --- ARENA Environment Setup ---
 echo "Creating and setting up 'arena-env' Conda environment..."
-conda create -n arena-env python=3.11 -y
+conda create -n arena-env python=3.10 -y
 conda activate arena-env # Activate for subsequent commands in this script layer
 
 echo "Cloning ARENA_3.0 repository..."
@@ -55,6 +55,20 @@ chmod 600 /root/.ssh/known_hosts
 
 echo "Touching /root/.no_auto_tmux..."
 touch /root/.no_auto_tmux
+
+# get mujoco files pls
+cd ~
+wget https://mujoco.org/download/mujoco210-linux-x86_64.tar.gz
+tar -xzf mujoco210-linux-x86_64.tar.gz
+mkdir ~/.mujoco
+mv ./mujoco210 ~/.mujoco/mujoco210
+
+pip install mujoco free-mujoco-py
+apt-get install -y libgl1-mesa-dev libgl1-mesa-glx libglew-dev libosmesa6-dev software-properties-common
+apt-get install -y patchelf
+
+echo "export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/root/.mujoco/mujoco210/bin" >> ~/.bashrc
+
 
 echo "--- Main Environment Setup Complete ---"
 
