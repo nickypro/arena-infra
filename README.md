@@ -145,8 +145,8 @@ Host myproxy
 ```scp config.env myproxy:~/arena-infra/config.env```
 - setup nginx on the proxy machine: `sudo bash ./proxy/setup_nginx.sh`.
 - on the proxy machine, run `python3 ./proxy/nginx_pods.py -v` to print out the nginx proxy config for the machines you have created, as well as a more readable table showing the status.
-- This should give `~/proxy.conf` for the machines you have created). Add this to `~/proxy.conf` on the proxy machine. You can do this automatically with:
-```python3 ./proxy/nginx_pods > ~/proxy.conf && systemctl restart nginx```
+- This should give `~/proxy.conf` for the machines you have created. Add this to `~/proxy.conf` on the proxy machine. You can do this automatically with:
+```python3 ./proxy/nginx_pods.py > ~/proxy.conf && systemctl restart nginx```
 
 - Note if you are manually editing `proxy.conf`, you will also need to then restart nginx: `sudo systemctl restart nginx`. Note that if there is an error in your config (eg: missing semicolon), nginx will not start. `nginx_pods.py` should directly give a working config, but if things fail, the best way to debug this is to run `journalctl -fu nginx` to see the error.
 - On your local machine again now, you can generate the new ssh config file with `python3 ./management/ssh_config_proxy.py`. Now whenever you want to restart or change one of the machines, you only need to update the proxy config file and restart nginx on the proxy machine, no need to update the ssh config for all the participants.
