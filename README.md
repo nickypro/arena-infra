@@ -1,6 +1,6 @@
 # ARENA 6.0 Infrastructure
 
-![](https://raw.githubusercontent.com/nickypro/arena-infra/refs/heads/main/management/arena-infrastructure-image.png)
+[![ARENA Logo](https://raw.githubusercontent.com/nickypro/arena-infra/refs/heads/main/management/arena-infrastructure-image.png)](https://arena.education/)
 
 This is the repository for running the the infrastructure for the [ARENA program](https://arena.education/). These scripts are used to set up cloud machines with GPUS with all necessary dependencies pre-installed for the participants to use and connect to.
 
