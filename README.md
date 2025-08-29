@@ -8,7 +8,7 @@ We use Runpod for the ARENA 6.0 infrastructure, as they are relatively affordabl
 
 The runpod template is available here: [https://link.nicky.pro/runpod-arena-env](https://link.nicky.pro/runpod-arena-env), but the actual images are available on docker hub as [nickypro/arena-env](https://hub.docker.com/r/nickypro/arena-env).
 
-The template is set to automatically clone the latest version of the ARENA 3.0 repository and install the dependencies with conda and cuda.
+The template is set to automatically clone the latest version of the [ARENA_3.0 repository](https://github.com/callummcdougall/ARENA_3.0) and install the dependencies with conda and cuda.
 
 ![Diagram comparing manual ssh config VS automatic ssh config](https://raw.githubusercontent.com/nickypro/arena-infra/refs/heads/main/management/arena-infra-diagram.png)
 
