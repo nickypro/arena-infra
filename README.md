@@ -1,8 +1,10 @@
-# Infrastructure for ARENA 5.0
+# ARENA 6.0 Infrastructure
+
+![](https://raw.githubusercontent.com/nickypro/arena-infra/refs/heads/main/management/arena-infrastructure-image.png)
 
 This is the repository for running the the infrastructure for the [ARENA program](https://arena.education/). These scripts are used to set up cloud machines with GPUS with all necessary dependencies pre-installed for the participants to use and connect to.
 
-We use Runpod for the ARENA 5.0 infrastructure, as they are relatively affordable and have a good API for setting up machines, but if you want to do things manually or only have a few machines, you can use another service like Vast.ai or whetever else.
+We use Runpod for the ARENA 6.0 infrastructure, as they are relatively affordable and have a good API for setting up machines, but if you want to do things manually or only have a few machines, you can use another service like Vast.ai or whetever else.
 
 The runpod template is available here: [https://link.nicky.pro/runpod-arena-env](https://link.nicky.pro/runpod-arena-env), but the actual images are available on docker hub as [nickypro/arena-env](https://hub.docker.com/r/nickypro/arena-env).
 
