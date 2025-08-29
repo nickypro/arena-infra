@@ -72,12 +72,12 @@ Yes, you can do it manually.
 
 - a. Set them up manually (if only a few machines):
     - Go to [runpod](https://link.nicky.pro/runpod) and click on "Create Instance".
-    - Use our template [https://link.nicky.pro/runpod-arena-env](https://link.nicky.pro/runpod-arena-env), or create your own template by going My Templates > New Template, and create one called something like `arena-env` that uses the docker image [`nickypro/arena-env:5.5`](https://hub.docker.com/r/nickypro/arena-env), and increase the volume size to 100GB.
+    - Use our template [https://link.nicky.pro/runpod-arena-env](https://link.nicky.pro/runpod-arena-env), or create your own template by going My Templates > New Template, and create one called something like `arena-env` that uses the docker image [`nickypro/arena-env:6.0`](https://hub.docker.com/r/nickypro/arena-env), and increase the volume size to 100GB.
     - Create a pod with the template for each pair of participants.
 
 - b. VAST.ai
     - Go to [VAST.ai](https://link.nicky.pro/vast) and create an instance.
-    - Use the `nickypro/arena-env:5.5` image.
+    - Use the `nickypro/arena-env:6.0` image.
     - Create an instance with desired GPU and reccomended ~100GB of storage.
     - You can then ssh into the machine using command given by VAST.
 
@@ -229,7 +229,7 @@ It will ask for confirmation, and then it will delete the machines.
   - `python3 ./management/create_new_pods.py -n <total_number_of_pods>`: Creates up to a specified number of pods. If there are already sum number of pods, it will only make the difference.
   - `python3 ./management/create_new_pods.py -a <additional_number_of_pods>`: Creates additional in addition to the existing number of pods.
   - `python3 ./management/create_new_pods.py <machine_name_1> <machine_name_2> ...`: Creates a pod with the specified machine names.
-  - `python3 ./management/create_new_pods.py -a 1 --gpu-type "NVIDIA A40" --num-gpus 4 --cloud-type SECURE --docker-image nickypro/arena-env:5.5 --disk-space-in-gb 500`: Creates 1 pod with the specified gpu type, number of gpus per machine, cloud type, docker image, and disk space.
+  - `python3 ./management/create_new_pods.py -a 1 --gpu-type "NVIDIA A40" --num-gpus 4 --cloud-type SECURE --docker-image nickypro/arena-env:6.0 --disk-space-in-gb 500`: Creates 1 pod with the specified gpu type, number of gpus per machine, cloud type, docker image, and disk space.
 
 - `ssh_config_manual.py`: Prints out the ssh config for the machines you have created.
 - `ssh_config_proxy.py`: Prints out the ssh config for the machines you have created using the proxy.
