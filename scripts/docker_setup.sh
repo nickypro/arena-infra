@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e # Exit immediately if a command exits with a non-zero status.
 
-ARENA_REPO="${1:-styme3279/ARENA_3.0}" # Default if no arg passed
+ARENA_REPO="${1:-callummcdougall/ARENA_3.0}" # Default if no arg passed
 
 echo "--- Starting Main Environment Setup ---"
 echo "ARENA Repository: ${ARENA_REPO}"
@@ -31,6 +31,9 @@ conda init bash
 # Source conda for current script session to use conda commands
 # shellcheck disable=SC1091
 source /opt/conda/etc/profile.d/conda.sh
+
+conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/main
+conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/r
 
 # --- ARENA Environment Setup ---
 echo "Creating and setting up 'arena-env' Conda environment..."
