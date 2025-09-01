@@ -1,5 +1,5 @@
 #!/bin/bash
-DAY_NAME="w4d2"
+DAY_NAME="w0d1"
 
 # --- Configuration (from ../config.env) ---
 source "$(dirname "$0")/../config.env"
@@ -37,10 +37,10 @@ mkdir -p "$TMP_LOG_DIR"
 # Function to process a single host
 process_host() {
   local nato_name="$1"
-  local host="arena5-$nato_name"
+  local host="$MACHINE_NAME_PREFIX-$nato_name"
   local logfile="$TMP_LOG_DIR/log_$nato_name.log"
   # Define the branch name - depends on nato_name
-  local BRANCH_NAME="arena5-$DAY_NAME-autocommit-$nato_name"
+  local BRANCH_NAME="$MACHINE_NAME_PREFIX-$DAY_NAME-autocommit-$nato_name"
   # Construct remote path using \$HOME for remote expansion
   local remote_repo_path="\$HOME/$REMOTE_GIT_DIR"
 
@@ -67,11 +67,11 @@ echo '--- [2/6] Configuring Git Identity (if needed) ---' && \
 echo '--- [3/6] Staging All Changes ---' && \
 git add . && \
 echo '--- [4/6] Committing Changes ---' && \
-git commit -m 'auto commit $DAY_NAME' || { echo '[ERROR] Commit failed (maybe no changes?)'; exit 10; } && \
+( git diff --cached --quiet && echo '[INFO] Nothing to commit; continuing' || git commit -m 'auto commit $DAY_NAME' ) || { echo '[ERROR] Commit failed'; exit 10; } && \
 echo '--- [5/6] Creating/Checking Out Branch: $BRANCH_NAME ---' && \
-git checkout -b '$BRANCH_NAME' || { echo '[ERROR] Branch creation/checkout failed (maybe branch exists?)'; exit 11; } && \
+(git checkout -b '$BRANCH_NAME' 2>/dev/null || git checkout '$BRANCH_NAME' || git checkout -t 'origin/$BRANCH_NAME') && \
 echo '--- [6/6] Pushing Branch to Origin ---' && \
-git push --set-upstream origin '$BRANCH_NAME' || { echo '[ERROR] Push failed'; exit 12; } && \
+(git push --set-upstream origin '$BRANCH_NAME' || { echo '[WARN] Push failed; continuing without push'; true; }) && \
 echo '--- Git operations completed successfully ---'"
 
   echo "Running Git commands on $host..." >> "$logfile"
