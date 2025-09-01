@@ -63,8 +63,34 @@ process_host() {
     return 1
   fi
   echo "[${pod_hostname}] Git SSH key copied and permissions set." | tee -a "$logfile"
+  # 3. Ensure /root/.ssh/config has a github.com host block using the copied key
+  echo "[${pod_hostname}] Ensuring SSH config for github.com is set..." | tee -a "$logfile"
+  
+  # Create SSH config commands (broken down for readability)
+  local ssh_config_commands="
+    mkdir -p /root/.ssh && 
+    touch /root/.ssh/config && 
+    chmod 700 /root/.ssh && 
+    sed -i '/^# BEGIN arena-infra github.com/,/^# END arena-infra github.com/d' /root/.ssh/config && 
+    printf '%s\n' \
+      '# BEGIN arena-infra github.com' \
+      'Host github.com' \
+      '    AddKeysToAgent yes' \
+      '    IdentityFile ${GIT_SSH_KEY_REMOTE}' \
+      '# END arena-infra github.com' \
+      >> /root/.ssh/config && 
+    chmod 600 /root/.ssh/config
+  "
+  
+  ssh -i "$SSH_KEY_PATH" "${SSH_USER}@${pod_hostname}" "$ssh_config_commands" >> "$logfile" 2>&1
+  if [ $? -ne 0 ]; then
+    echo "[${pod_hostname}] ERROR: Failed to update SSH config on pod." | tee -a "$logfile"
+    echo "[FAIL] ${pod_hostname} (ssh config)"
+    return 1
+  fi
+  echo "[${pod_hostname}] SSH config updated for github.com." | tee -a "$logfile"
 
-  # 3. Configure Git remote for SSH and pull updates
+  # 4. Configure Git remote for SSH and pull updates
   echo "[${pod_hostname}] Configuring Git remote for SSH and pulling updates from ${DEFAULT_BRANCH}..." | tee -a "$logfile"
   # Ensure GitHub is in known_hosts (Docker image should do this, but good to be safe or re-verify)
   # ssh -i "$SSH_KEY_PATH" "${SSH_USER}@${pod_hostname}" "ssh-keyscan -t rsa github.com >> /root/.ssh/known_hosts" >> "$logfile" 2>&1
@@ -101,7 +127,7 @@ echo 'Updated submodules.'"
     echo "[${pod_hostname}] Git remote configured and repository updated." | tee -a "$logfile"
   fi
 
-  # 4. Add/Update the .name file
+  # 5. Add/Update the .name file
   echo "[${pod_hostname}] Creating/Updating /root/.name file..." | tee -a "$logfile"
   ssh -i "$SSH_KEY_PATH" "${SSH_USER}@${pod_hostname}" "echo \"export MACHINE_NAME='${machine_name}'\" > /root/.name" >> "$logfile" 2>&1
   if [ $? -ne 0 ]; then
