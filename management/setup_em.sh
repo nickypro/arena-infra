@@ -5,9 +5,9 @@ source "$(dirname "$0")/../config.env"
 
 # --- Configuration ---
 # SSH key to use for connecting to the pods
-SSH_KEY_PATH=SHARED_SSH_KEY_PATH
+SSH_KEY_PATH=$SHARED_SSH_KEY_PATH
 # Local path to the private SSH key that will be copied TO the pods for Git operations
-GIT_SSH_KEY_LOCAL=SHARED_SSH_KEY_PATH
+GIT_SSH_KEY_LOCAL=$SHARED_SSH_KEY_PATH
 
 # User for SSH connection (should be 'root' as per your Docker setup)
 SSH_USER="root"
@@ -103,13 +103,13 @@ echo 'Updated submodules.'"
 
   # 4. Add/Update the .name file
   echo "[${pod_hostname}] Creating/Updating /root/.name file..." | tee -a "$logfile"
-  ssh -i "$SSH_KEY_PATH" "${SSH_USER}@${pod_hostname}" "echo \"export MACHINE_NAME='${nato_suffix}'\" > /root/.name" >> "$logfile" 2>&1
+  ssh -i "$SSH_KEY_PATH" "${SSH_USER}@${pod_hostname}" "echo \"export MACHINE_NAME='${machine_name}'\" > /root/.name" >> "$logfile" 2>&1
   if [ $? -ne 0 ]; then
     echo "[${pod_hostname}] ERROR: Failed to create /root/.name file." | tee -a "$logfile"
     echo "[FAIL] ${pod_hostname} (.name file)"
     # Optionally return 1
   else
-    echo "[${pod_hostname}] /root/.name file created with MACHINE_NAME=${nato_suffix}." | tee -a "$logfile"
+    echo "[${pod_hostname}] /root/.name file created with MACHINE_NAME=${machine_name}." | tee -a "$logfile"
   fi
 
   # 5. (Optional) Re-run MOTD script if it depends on .name file and doesn't run on every login
@@ -124,6 +124,7 @@ echo 'Updated submodules.'"
 # Check if GIT_SSH_KEY_LOCAL exists
 if [ ! -f "$GIT_SSH_KEY_LOCAL" ]; then
   echo "ERROR: Git SSH key for pods not found at $GIT_SSH_KEY_LOCAL"
+  stat "$GIT_SSH_KEY_LOCAL"
   echo "Please create it or update GIT_SSH_KEY_LOCAL path."
   exit 1
 fi
