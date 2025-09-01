@@ -78,7 +78,7 @@ echo '--- [4/6] Committing Changes ---' && \
 echo '--- [5/6] Creating/Checking Out Branch: $BRANCH_NAME ---' && \
 (git checkout -b '$BRANCH_NAME' 2>/dev/null || git checkout '$BRANCH_NAME' || git checkout -t 'origin/$BRANCH_NAME') && \
 echo '--- [6/6] Pushing Branch to Origin ---' && \
-(git push --set-upstream origin '$BRANCH_NAME' || { echo '[WARN] Push failed; continuing without push'; true; }) && \
+(git push --set-upstream origin '$BRANCH_NAME' || { echo '[WARN] Push failed; continuing without push'; exit 12; }) && \
 echo '--- Git operations completed successfully ---'"
 
   echo "Running Git commands on $host..." >> "$logfile"
