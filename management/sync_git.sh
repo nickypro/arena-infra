@@ -1,8 +1,7 @@
 #!/bin/bash
 # Get DAY_NAME from command line argument
 if [ $# -eq 0 ]; then
-    echo "Error: DAY_NAME argument required"
-    echo "Usage: $0 <DAY_NAME>"
+    echo "ERROR: DAY_NAME (eg: "w0d1") argument required"
     echo "Example: $0 w0d1"
     exit 1
 fi
