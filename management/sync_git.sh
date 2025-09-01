@@ -1,5 +1,13 @@
 #!/bin/bash
-DAY_NAME="w0d1"
+# Get DAY_NAME from command line argument
+if [ $# -eq 0 ]; then
+    echo "Error: DAY_NAME argument required"
+    echo "Usage: $0 <DAY_NAME>"
+    echo "Example: $0 w0d1"
+    exit 1
+fi
+
+DAY_NAME="$1"
 
 # --- Configuration (from ../config.env) ---
 source "$(dirname "$0")/../config.env"
