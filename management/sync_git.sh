@@ -47,7 +47,7 @@ process_host() {
   local host="$MACHINE_NAME_PREFIX-$nato_name"
   local logfile="$TMP_LOG_DIR/log_$nato_name.log"
   # Define the branch name - depends on nato_name
-  local BRANCH_NAME="$MACHINE_NAME_PREFIX-$DAY_NAME-autocommit-$nato_name"
+  local BRANCH_NAME="autocommit-$MACHINE_NAME_PREFIX-$DAY_NAME-$nato_name"
   # Construct remote path using \$HOME for remote expansion
   local remote_repo_path="\$HOME/$REMOTE_GIT_DIR"
 
