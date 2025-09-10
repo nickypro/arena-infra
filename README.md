@@ -12,7 +12,51 @@ The template is set to automatically clone the latest version of the [`ARENA_3.0
 
 ![Diagram comparing manual ssh config VS automatic ssh config](https://raw.githubusercontent.com/nickypro/arena-infra/refs/heads/main/management/arena-infra-diagram.png)
 
+## TL;DR - Managing infrastructure when already set up
+
+If you have not yet set up the repo, see the section below. Here is a summary for any organisers using the repo. To create some new machines, run one of the two options (either adding to existing pods, or requesting a total number of pods):
+```
+python3 ./arena-infra/management/create_new_pods.py -a [number_of_new_pods]
+```
+```
+python3 ./arena-infra/management/create_new_pods.py -n [total_number_of_pods]
+```
+
+By default it will use 1x A4000 16GB. You can also use multiple gpus by adding `--gpu-count 2` for 2 gpus per machine, or `--gpu-type [GPU_NAME]` (eg: `NVIDIA A100 80GB PCIe` or `NVIDIA GeForce RTX 3090` or `NVIDIA A40`, see [runpod gpu type list](https://docs.runpod.io/references/gpu-types#gpu-types))
+
+Then, you can see the machine information using:
+```
+python3 ./arena-infra/management/list_pods.py
+```
+
+It may take a short while before the machine is up and running, you will need to wait until it shows an IP Address and Port in order to connect.
+
+(proxy option) if using the proxy setup, you can update the config by running:
+```
+bash ./arena-infra/proxy/update.sh
+```
+
+(manual option) if not using the proxy, you can generate a new ssh config using this command:
+```
+python3 ./arena-infra/management/ssh_config_manual.py
+```
+
+Then once done, you should probably test that the machines are all good. Try connecting using:
+
+```
+bash ./arena-infra/management/test_em.sh
+```
+
+
+
 ## Steps for Setting up the infrastructure.
+
+### (optional) 0. **decide if using a proxy**
+- If you have a lot of participants, or a long program, setting up a proxy upfront and only needing to get participants set up once saves a lot of headaches. 
+- You can, however, choose to setup a proxy at a later point in time.
+
+If you decide to go the proxy route, do step 6 (setting up a proxy) first, and instead of running any commands on the local machine, instead run them on the proxy machine. This makes it easier for other organisers to also manage the machines. 
+
 
 ### 1. **Clone the repo on your local machine.**
 - You will need git and python installed on your local machine.
@@ -127,11 +171,23 @@ Host arena-<machine_name>
 - give the participants the ssh private key `cat ~/.ssh/shared_infra_key_name`, get them to save it in `~/.ssh/shared_infra_key_name`. (If they are on MacOS/Linux, they will additionally need run `chmod 600 ~/.ssh/shared_infra_key_name` to make sure the key is not world readable.)
 - give the participants the ssh config file `cat ~/.ssh/config` from step 4. They should add the lines to their own `~/.ssh/config` file.
 
-### 6. **(optional) Streamlining the ssh config**
+### 6. **(optional) Setting up a Proxy to streamline SSH Configs**
 - One issue is that if you ever want to turn off a machine, or you want to change out one of the machines, you need to manually update the ssh config by giving this to each participant. This is a pain.
-- set up an ubuntu proxy machine with many ports available. I use [hetzner](https://link.nicky.pro/hetzner), but you can use whatever you want.
-- Note: you should should **use a different ssh key** than the one that is shared with the participants. (you can use an existing key you have for yourself, or create a new one with `ssh-keygen -t ed25519 -N "" -C "proxy_key_name" -f ~/.ssh/proxy_key_name`, and use the public key `cat ~/.ssh/proxy_key_name.pub` for the proxy machine.)
+- set up an ubuntu proxy machine with many ports available. I use [hetzner](https://link.nicky.pro/hetzner). You can create whatever Virtual Private Server (VPS) or similar you want. For ease of setup I will assume hetzner + ubuntu VPU by default, if you have different requirements you can follow them as needed.
+
+- First, **use a different ssh key** than the one that is shared with the participants. (you can use an existing key you have for yourself, or create a new one with `ssh-keygen -t ed25519 -N "" -C "proxy_key_name" -f ~/.ssh/proxy_key_name`, and use the public key `cat ~/.ssh/proxy_key_name.pub` for the proxy machine.)
 - add this proxy machine to your ~/.ssh/config
+- If you don't have any preferences, then:
+    - Create an account on [hetzner](https://link.nicky.pro/hetzner)
+    - Create a new project, name it whatever you want (eg: "arena-infra-proxy")
+    - Create a resource > create a server
+    - Choose any location (whatever is closest to you)
+    - Choose an image (eg: Ubuntu 24.04)
+    - Choose a type: Shared vCPU > Arm64 (Ampere) > CAX11 
+    - Add your ssh key (eg: run `cat ~.ssh/proxy_key_name.pub` and copy the output)
+    - Create & Buy Now
+
+- Now you can add an ssh config to your local machine in order to connect to the proxy:
 ```
 Host myproxy
     User root
@@ -140,11 +196,13 @@ Host myproxy
     UserKnownHostsFile=/dev/null
     StrictHostKeyChecking=no
 ```
-- Update the config.env, `SSH_PROXY_HOST` should be the ip address or domain name of the proxy machine. (optionally update `SSH_PROXY_NGINX_CONFIG_PATH` and `SSH_PROXY_STARTING_PORT` if you want to run multiple instances of the proxy on the same machine.)
 - clone this repo on the proxy machine:
 ```git clone https://github.com/nickypro/arena-infra.git && cd arena-infra```
-- copy the config.env file to the proxy machine:
+- setup python on the machine, I find it annoying on ubuntu and the easiest way is to run:
+`bash ~/arena-infra/proxy/install_python_venv.sh`
+- (if you previously set up locally first) copy the config.env file to the proxy machine. On local machine run:
 ```scp config.env myproxy:~/arena-infra/config.env```
+- Update the config.env, `SSH_PROXY_HOST` should be the ip address or domain name of the proxy machine. (optionally update `SSH_PROXY_NGINX_CONFIG_PATH` and `SSH_PROXY_STARTING_PORT` if you want to run multiple instances of the proxy on the same machine.)
 - setup nginx on the proxy machine: `sudo bash ./proxy/setup_nginx.sh`.
 - on the proxy machine, run `python3 ./proxy/nginx_pods.py -v` to print out the nginx proxy config for the machines you have created, as well as a more readable table showing the status.
 - This should give `~/proxy.conf` for the machines you have created. Add this to `~/proxy.conf` on the proxy machine. You can do this automatically with:
