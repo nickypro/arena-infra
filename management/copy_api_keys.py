@@ -8,13 +8,17 @@ from mydotenv import load_env
 load_env()
 
 # --- Configuration ---
-# BASE_DIR = os.path.dirname(os.path.abspath(__file__)) # Gets script's directory
-BASE_DIR = "./"
+# Gets script's directory and goes up one level to get the base directory 
+# ie: [ /root/arena_infra/ ] /management/copy_api_keys.py -> [/root/arena_infra/]
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))# Gets script's directory
+# BASE_DIR = "./"
 OPENAI_CSV_PATH = os.path.join(BASE_DIR, "keys/openai_api_keys.csv")
 ANTHROPIC_CSV_PATH = os.path.join(BASE_DIR, "keys/anthropic_api_keys.csv")
+OPENROUTER_CSV_PATH = os.path.join(BASE_DIR, "keys/openrouter_api_keys.csv")
 
 OPENAI_ENV_VAR = "OPENAI_API_KEY"
 ANTHROPIC_ENV_VAR = "ANTHROPIC_API_KEY"
+OPENROUTER_ENV_VAR = "OPENROUTER_API_KEY"
 SHELL_RC_FILES = ["~/.bashrc", "~/.zshrc"]
 # --- End Configuration ---
 
@@ -80,12 +84,14 @@ def main():
     print("--- Starting API Key Deployment Script ---")
     print(f"OpenAI keys from: {OPENAI_CSV_PATH}")
     print(f"Anthropic keys from: {ANTHROPIC_CSV_PATH}")
+    print(f"Openrouter keys from: {OPENROUTER_CSV_PATH}")
     print("IMPORTANT: Assumes SSH key-based auth. Keys are appended.\n")
 
     openai_keys = read_api_keys(OPENAI_CSV_PATH)
     anthropic_keys = read_api_keys(ANTHROPIC_CSV_PATH)
+    openrouter_keys = read_api_keys(OPENROUTER_CSV_PATH)
 
-    all_hosts = sorted(list(set(openai_keys.keys()) | set(anthropic_keys.keys())))
+    all_hosts = sorted(list(set(openai_keys.keys()) | set(anthropic_keys.keys() | set(openrouter_keys.keys()))))
 
     if not all_hosts:
         print("No hosts found in any CSV files. Exiting.")
@@ -102,6 +108,11 @@ def main():
             for rc_file in SHELL_RC_FILES:
                 add_key_to_remote(
                     host, ANTHROPIC_ENV_VAR, anthropic_keys[host], rc_file
+                )
+        if host in openrouter_keys:
+            for rc_file in SHELL_RC_FILES:
+                add_key_to_remote(
+                    host, OPENROUTER_ENV_VAR, openrouter_keys[host], rc_file
                 )
         print("-" * 20)
 
