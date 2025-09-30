@@ -3,6 +3,7 @@ import csv
 import subprocess
 import shlex
 import os # For path joining
+import concurrent.futures
 
 from mydotenv import load_env
 load_env()
@@ -97,7 +98,18 @@ def main():
         print("No hosts found in any CSV files. Exiting.")
         return
 
-    for host in all_hosts:
+    # Determine parallelism level
+    # Environment variable to control concurrency
+    max_workers_env = os.getenv("API_KEYS_MAX_PARALLEL")
+    try:
+        max_workers = int(max_workers_env) if max_workers_env else 50
+    except ValueError:
+        max_workers = 10
+
+    print(f"Running in parallel with up to {max_workers} workers...")
+
+    # Define per-host work
+    def process_host(host):
         print(f"\nProcessing host: {host}")
         if host in openai_keys:
             for rc_file in SHELL_RC_FILES:
@@ -115,6 +127,12 @@ def main():
                     host, OPENROUTER_ENV_VAR, openrouter_keys[host], rc_file
                 )
         print("-" * 20)
+
+    # Execute in parallel and wait for completion
+    with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
+        futures = [executor.submit(process_host, host) for host in all_hosts]
+        for _ in concurrent.futures.as_completed(futures):
+            pass
 
     print("\n--- Script Finished ---")
 
