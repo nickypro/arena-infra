@@ -2,6 +2,7 @@
 
 # Load config.env from parent directory
 source "$(dirname "$0")/../config.env"
+logdir="$(dirname "$0")/../logs"
 
 # --- Configuration ---
 # SSH key to use for connecting to the pods
@@ -27,13 +28,13 @@ MAX_PARALLEL=10
 # --- End Configuration ---
 
 # Ensure logs directory exists
-mkdir -p ./logs
+mkdir -p $logdir
 
 # Function to process a single host
 process_host() {
   local machine_name="$1"
   local pod_hostname="${MACHINE_NAME_PREFIX}-${machine_name}" # Assuming this is how your pods are named/accessible
-  local logfile="./logs/init-${pod_hostname}.log"
+  local logfile="$logdir/init-${pod_hostname}.log"
 
   echo "--- Starting setup for ${pod_hostname} ---" > "$logfile"
   date >> "$logfile"
@@ -189,7 +190,7 @@ echo "All pod setup processes finished."
 
 # Optional: Combine all logs into one file
 echo "Combining logs..."
-cat ./logs/init-${MACHINE_NAME_PREFIX}-*.log > ./logs/init-all-pods.log 2>/dev/null
+cat $logdir/init-${MACHINE_NAME_PREFIX}-*.log > $logdir/init-all-pods.log 2>/dev/null
 echo "Combined log saved to ./logs/init-all-pods.log"
 
 echo "--- All Pods Processed ---"

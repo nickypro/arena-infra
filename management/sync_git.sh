@@ -38,7 +38,7 @@ SSH_CONNECT_TEST_OPTS=(
 # --- End Configuration ---
 
 # Temporary directory for logs
-TMP_LOG_DIR="./logs/tmp_git_sync_logs"
+TMP_LOG_DIR="$(dirname "$0")/../logs/tmp_git_sync_logs"
 mkdir -p "$TMP_LOG_DIR"
 
 # Function to process a single host
