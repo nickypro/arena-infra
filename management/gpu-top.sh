@@ -4,7 +4,7 @@ set -euo pipefail
 # Load MACHINE_NAME_LIST (array) and MACHINE_NAME_PREFIX from ../config.env
 source "$(dirname "$0")/../config.env"
 
-INTERVAL="${1:-60}"
+INTERVAL="${1:-2}"
 CONCURRENCY="${CONCURRENCY:-8}"
 GPU_MODEL_WIDTH="${GPU_MODEL_WIDTH:-8}"   # width for short model name (e.g., A4000, A100-80GB)
 
