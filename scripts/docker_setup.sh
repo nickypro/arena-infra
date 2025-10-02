@@ -11,7 +11,7 @@ echo "Updating and installing system packages..."
 apt-get update -y
 apt-get install -y --no-install-recommends \
     ncdu vim nano htop net-tools iputils-ping tree ffmpeg sudo fzf nvtop \
-    figlet curl wget git ca-certificates btop rsync lsof \
+    figlet curl wget git ca-certificates btop rsync lsof tmux zip unzip \
     build-essential # For potential pip packages that need compilation
 
 # --- Miniconda Setup ---

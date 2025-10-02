@@ -1,5 +1,6 @@
 # Base image from RunPod
-FROM runpod/pytorch:2.4.0-py3.11-cuda12.4.1-devel-ubuntu22.04
+# FROM runpod/pytorch:2.4.0-py3.11-cuda12.4.1-devel-ubuntu22.04
+FROM runpod/pytorch:2.8.0-py3.11-cuda12.8.1-cudnn-devel-ubuntu22.04
 
 ARG ARENA_REPO_ARG="callummcdougall/ARENA_3.0"
 ARG DOTFILES_REPO_ARG="nickypro/arena-infra" # For reference
