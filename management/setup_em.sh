@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #
 # =============================================================================
 # setup_em.sh - Initialize ARENA pods with SSH keys and Git configuration

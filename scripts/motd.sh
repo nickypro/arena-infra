@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 chmod -x /etc/update-motd.d/10-help-text 
 chmod -x /etc/update-motd.d/50-motd-news
 chmod -x /etc/update-motd.d/60-unminimize

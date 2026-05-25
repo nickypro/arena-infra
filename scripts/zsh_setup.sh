@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 echo "Setting up environment..."
 apt update
 apt install -y zsh figlet

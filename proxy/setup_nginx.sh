@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 sudo apt update && sudo apt install nginx-full git vim -y
 
 cp ./update.sh ~/

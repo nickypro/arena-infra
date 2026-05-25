@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 set -e # Exit immediately if a command exits with a non-zero status.
 
 ARENA_REPO="${1:-callummcdougall/ARENA_3.0}" # Default if no arg passed

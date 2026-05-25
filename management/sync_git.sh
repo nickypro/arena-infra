@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Commit and push changes on all machines (to their CURRENT branch)
 # Will NOT push to main/master branches for safety
 

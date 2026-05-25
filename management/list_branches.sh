@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # List current git branches for all machines in a table format
 
 source "$(dirname "$0")/../config.env"

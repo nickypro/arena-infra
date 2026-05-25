@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 # create a global, auto-activated virtualenv for root
 set -euo pipefail
 export DEBIAN_FRONTEND=noninteractive
