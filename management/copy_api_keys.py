@@ -13,9 +13,10 @@ load_env()
 # ie: [ /root/arena_infra/ ] /management/copy_api_keys.py -> [/root/arena_infra/]
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))# Gets script's directory
 # BASE_DIR = "./"
-OPENAI_CSV_PATH = os.path.join(BASE_DIR, "keys/openai_api_keys.csv")
-ANTHROPIC_CSV_PATH = os.path.join(BASE_DIR, "keys/anthropic_api_keys.csv")
-OPENROUTER_CSV_PATH = os.path.join(BASE_DIR, "keys/openrouter_api_keys.csv")
+PREFIX = os.environ.get("MACHINE_NAME_PREFIX", "arena")
+OPENAI_CSV_PATH = os.path.join(BASE_DIR, f"keys/{PREFIX}_openai_keys.csv")
+ANTHROPIC_CSV_PATH = os.path.join(BASE_DIR, f"keys/{PREFIX}_anthropic_keys.csv")
+OPENROUTER_CSV_PATH = os.path.join(BASE_DIR, f"keys/{PREFIX}_openrouter_keys.csv")
 
 OPENAI_ENV_VAR = "OPENAI_API_KEY"
 ANTHROPIC_ENV_VAR = "ANTHROPIC_API_KEY"
