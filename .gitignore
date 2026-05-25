@@ -2,3 +2,4 @@ arena5_key
 logs/
 keys/
 __pycache__/
+config.env
