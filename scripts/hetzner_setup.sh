@@ -40,7 +40,20 @@ export PATH="$HOME/.local/bin:$PATH"
 uv --version
 
 echo "### 4/5 ARENA_3.0 + Python env"
-[ -d "$REPO_DIR" ] || git clone --depth 1 "$REPO_URL" "$REPO_DIR"
+# If a git deploy key was provided (REPO_KEY), wire github.com to it so we can clone — and
+# later push backups to — the PRIVATE cohort repo over SSH. Without it, REPO_URL stays the
+# public default and the clone is anonymous.
+if [ -n "${REPO_KEY:-}" ] && [ -f "$REPO_KEY" ]; then
+    chmod 600 "$REPO_KEY"
+    mkdir -p ~/.ssh && chmod 700 ~/.ssh
+    grep -q github.com ~/.ssh/known_hosts 2>/dev/null || ssh-keyscan github.com >> ~/.ssh/known_hosts 2>/dev/null
+    if ! grep -q "BEGIN arena github" ~/.ssh/config 2>/dev/null; then
+        printf '%s\n' '# BEGIN arena github' 'Host github.com' "  IdentityFile $REPO_KEY" \
+            '  IdentitiesOnly yes' '# END arena github' >> ~/.ssh/config
+        chmod 600 ~/.ssh/config
+    fi
+fi
+[ -d "$REPO_DIR" ] || git clone "$REPO_URL" "$REPO_DIR"
 cd "$REPO_DIR"
 # CPU substitutions: torch CPU wheels instead of CUDA, jax[cpu] instead of jax[cuda12].
 sed -e 's#https://download.pytorch.org/whl/cu118#https://download.pytorch.org/whl/cpu#' \
