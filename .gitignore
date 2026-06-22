@@ -2,3 +2,5 @@ arena5_key
 logs/
 keys/
 __pycache__/
+# Holds live secrets (RUNPOD_API_KEY, key paths) — keep it local, never track/push it.
+config.env
