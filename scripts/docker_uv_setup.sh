@@ -59,6 +59,10 @@ uv pip install pip
 
 # transformer_lens pins numpy<2, jax needs numpy>=2 -> override so the resolve succeeds.
 printf 'numpy>=2.0\n' > /tmp/arena_overrides.txt
+# The repo pins eindex-callum to the ARENA-education git fork (0.2.x, a drop-in replacement),
+# but sae-vis==0.3.7 declares eindex-callum<0.2 -> unsatisfiable. Promote the repo's own
+# eindex line to an override so it wins over sae-vis's pin.
+grep -E '^eindex-callum *@' "$REPO_DIR/requirements.txt" >> /tmp/arena_overrides.txt || true
 
 echo "=== Installing ARENA requirements (CUDA torch) ==="
 # --index-strategy unsafe-best-match: the torch CUDA extra-index also carries some shared
