@@ -1,0 +1,48 @@
+# ARENA GPU image — uv (arena-env) instead of conda. Pushed to DockerHub as nickypro/arena-env.
+#
+# Build (defaults to ARENA-education/ARENA_materials@main; override with
+# --build-arg ARENA_REPO_ARG=owner/repo --build-arg ARENA_BRANCH_ARG=branch):
+#   docker build -t nickypro/arena-env:9.0 -f Dockerfile_arena_env .
+# Push:
+#   docker login -u nickypro && docker push nickypro/arena-env:9.0
+# Needs ~120GB free disk (the image is ~50GB uncompressed); a throwaway Hetzner cpx41 works.
+#
+# The Python env is a uv virtualenv named arena-env at /opt/arena-env, auto-activated by
+# both ~/.zshrc and ~/.bashrc so a fresh login shell has `python`/`pip`/`pip show` pointed
+# at it with no `uv ` prefix. Everything else (zsh + oh-my-zsh + powerlevel10k + plugins +
+# ARENA figlet MOTD + dotfiles) matches the conda GPU pods; only conda->uv changed.
+
+# Same RunPod CUDA base as the conda GPU image / Dockerfile_cpu's GPU target.
+FROM runpod/pytorch:2.8.0-py3.11-cuda12.8.1-cudnn-devel-ubuntu22.04
+
+# Course repo baked in at /root/<repo name> (plus a /root/ARENA_3.0 compat symlink).
+ARG ARENA_REPO_ARG="ARENA-education/ARENA_materials"
+ARG ARENA_BRANCH_ARG="main"
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV LANG=C.UTF-8 LC_ALL=C.UTF-8
+# arena-env (uv venv) on PATH for any non-login RUN/exec; login shells re-activate via rc files.
+ENV PATH="/opt/arena-env/bin:/root/.local/bin:${PATH}"
+
+# Source for RUN: bash with pipefail so failures in pipelines abort the build.
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
+# 1) Python env via uv (arena-env), CUDA torch, wandb upgrade, all subrepos cloned.
+COPY ./scripts/docker_uv_setup.sh /usr/local/bin/docker_uv_setup.sh
+RUN chmod +x /usr/local/bin/docker_uv_setup.sh && \
+    /usr/local/bin/docker_uv_setup.sh "${ARENA_REPO_ARG}" "${ARENA_BRANCH_ARG}"
+
+# 2) Shell setup (zsh/oh-my-zsh/p10k/MOTD/dotfiles). Dotfiles + scripts baked in (no runtime clone).
+RUN mkdir -p /root/.arena_infra
+COPY ./scripts   /root/.arena_infra/scripts
+COPY ./dotfiles  /root/.arena_infra/dotfiles
+RUN chmod +x /root/.arena_infra/scripts/zsh_setup_uv.sh /root/.arena_infra/scripts/motd.sh && \
+    /root/.arena_infra/scripts/zsh_setup_uv.sh
+
+# Trim apt cache to keep the image smaller.
+RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+WORKDIR /workspace
+
+# Same default entrypoint as the RunPod base image.
+CMD ["/start.sh"]
