@@ -1,16 +1,10 @@
 #!/bin/bash
 # Provision the ARENA GPU container with a uv-based Python env (replaces conda).
 #
-# Creates a uv virtualenv named arena-env at /opt/arena-env, installs the ARENA
-# requirements with CUDA torch, upgrades wandb, installs pip INTO the venv (uv venv
-# does not ship pip, so bare `pip`/`pip show` would otherwise be missing), and clones
-# every external subrepo the ARENA chapters reference so they are baked into the image.
-#
-# Mirrors the proven fixes from hetzner_setup.sh, but GPU instead of CPU:
-#   - transformer_lens pins numpy<2 vs jax needs numpy>=2  -> `--override numpy>=2.0`
-#   - torch index / circuitsvis importlib-metadata clash    -> `--index-strategy unsafe-best-match`
-# (No CPU wheel substitution here: this is a GPU image, so we keep the CUDA torch
-#  extra-index and bitsandbytes from requirements.txt as-is.)
+# Follows the course repo's own install.sh (python 3.13 env, plain `pip install -r
+# requirements.txt`, arena-llm-context clone, VS Code settings), with uv + a venv at
+# /opt/arena-env instead of conda. On top of that it bakes in what a pod needs offline:
+# system packages, every external subrepo the chapters clone, and the claude/codex CLIs.
 set -euo pipefail
 
 ARENA_REPO="${1:-ARENA-education/ARENA_materials}"
@@ -47,35 +41,23 @@ echo "=== Cloning ${ARENA_REPO}@${ARENA_BRANCH} -> ${REPO_DIR} ==="
 [ "$REPO_DIR" = /root/ARENA_3.0 ] || [ -e /root/ARENA_3.0 ] || ln -s "$REPO_DIR" /root/ARENA_3.0
 
 # --- arena-env virtualenv (uv) ---
-echo "=== Creating uv venv arena-env at ${VENV} ==="
+# Mirrors the Python half of the repo's install.sh (python 3.13, upgrade pip/setuptools/wheel,
+# then a plain `-r requirements.txt`) with uv in place of conda + pip. requirements.txt carries
+# its own fixes now (ARENA forks of sae-vis/eindex, numpy>=2-compatible transformer_lens, CUDA
+# torch from PyPI), so no overrides or extra indexes here — if this resolve breaks, fix it
+# upstream rather than patching around it in the image.
+echo "=== Creating uv venv arena-env (python 3.13) at ${VENV} ==="
 uv venv --python 3.13 "$VENV"
 # shellcheck disable=SC1091
 source "$VENV/bin/activate"
 
-# GOTCHA: `uv venv` does NOT install pip into the venv. Install it explicitly so that a
-# user typing bare `pip`/`pip show <pkg>` operates on arena-env without a `uv ` prefix.
-echo "=== Installing pip into arena-env (so bare pip / pip show work) ==="
-uv pip install pip
+# `uv venv` doesn't ship pip; installing it (as install.sh upgrades it) means bare `pip` /
+# `pip show <pkg>` operate on arena-env without a `uv ` prefix.
+echo "=== Installing pip/setuptools/wheel into arena-env ==="
+uv pip install -U pip setuptools wheel
 
-# transformer_lens pins numpy<2, jax needs numpy>=2 -> override so the resolve succeeds.
-printf 'numpy>=2.0\n' > /tmp/arena_overrides.txt
-# The repo pins eindex-callum to the ARENA-education git fork (0.2.x, a drop-in replacement),
-# but sae-vis==0.3.7 declares eindex-callum<0.2 -> unsatisfiable. Promote the repo's own
-# eindex line to an override so it wins over sae-vis's pin.
-grep -E '^eindex-callum *@' "$REPO_DIR/requirements.txt" >> /tmp/arena_overrides.txt || true
-
-echo "=== Installing ARENA requirements (CUDA torch) ==="
-# --index-strategy unsafe-best-match: the torch CUDA extra-index also carries some shared
-# deps (e.g. importlib-metadata) at versions that conflict with PyPI pins (circuitsvis);
-# this lets uv pick the best version across BOTH indexes instead of first-index-only.
-uv pip install --no-cache-dir --index-strategy unsafe-best-match \
-    --override /tmp/arena_overrides.txt \
-    -r "$REPO_DIR/requirements.txt"
-
-# --- wandb: upgrade to latest (had API-key issues on the pinned version) ---
-echo "=== Upgrading wandb to latest ==="
-uv pip install --no-cache-dir --upgrade wandb
-python -c 'import wandb; print("wandb", wandb.__version__)'
+echo "=== Installing ARENA requirements ==="
+uv pip install --no-cache-dir -r "$REPO_DIR/requirements.txt"
 
 # --- Clone ALL external subrepos referenced by the ARENA chapters ---
 # These are cloned per-exercise by the course instructions; we bake them in so the image
@@ -157,4 +139,4 @@ ssh-keyscan github.com >> /root/.ssh/known_hosts 2>/dev/null || true
 chmod 600 /root/.ssh/known_hosts 2>/dev/null || true
 touch /root/.no_auto_tmux
 
-echo "=== docker_uv_setup complete: $(python --version 2>&1), torch $(python -c 'import torch; print(torch.__version__)'), wandb $(python -c 'import wandb; print(wandb.__version__)') ==="
+echo "=== docker_uv_setup complete: $(python --version 2>&1), torch $(python -c 'import torch; print(torch.__version__)'), jax $(python -c 'import jax; print(jax.__version__)') ==="

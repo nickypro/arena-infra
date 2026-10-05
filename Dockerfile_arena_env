@@ -27,7 +27,7 @@ ENV PATH="/opt/arena-env/bin:/root/.local/bin:${PATH}"
 # Source for RUN: bash with pipefail so failures in pipelines abort the build.
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
-# 1) Python env via uv (arena-env), CUDA torch, wandb upgrade, all subrepos cloned.
+# 1) Python env via uv (arena-env, python 3.13, as upstream install.sh), all subrepos cloned.
 COPY ./scripts/docker_uv_setup.sh /usr/local/bin/docker_uv_setup.sh
 RUN chmod +x /usr/local/bin/docker_uv_setup.sh && \
     /usr/local/bin/docker_uv_setup.sh "${ARENA_REPO_ARG}" "${ARENA_BRANCH_ARG}"
