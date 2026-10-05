@@ -48,7 +48,7 @@ echo "=== Cloning ${ARENA_REPO}@${ARENA_BRANCH} -> ${REPO_DIR} ==="
 
 # --- arena-env virtualenv (uv) ---
 echo "=== Creating uv venv arena-env at ${VENV} ==="
-uv venv --python 3.11 "$VENV"
+uv venv --python 3.13 "$VENV"
 # shellcheck disable=SC1091
 source "$VENV/bin/activate"
 

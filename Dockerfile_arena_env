@@ -2,9 +2,9 @@
 #
 # Build (defaults to ARENA-education/ARENA_materials@main; override with
 # --build-arg ARENA_REPO_ARG=owner/repo --build-arg ARENA_BRANCH_ARG=branch):
-#   docker build -t nickypro/arena-env:9.0 -f Dockerfile_arena_env .
+#   docker build -t nickypro/arena-env:9.1 -f Dockerfile_arena_env .
 # Push:
-#   docker login -u nickypro && docker push nickypro/arena-env:9.0
+#   docker login -u nickypro && docker push nickypro/arena-env:9.1
 # Needs ~120GB free disk (the image is ~50GB uncompressed); a throwaway Hetzner cpx41 works.
 #
 # The Python env is a uv virtualenv named arena-env at /opt/arena-env, auto-activated by
