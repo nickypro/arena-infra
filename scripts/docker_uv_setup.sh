@@ -1,9 +1,9 @@
 #!/bin/bash
 # Provision the ARENA GPU container with a uv-based Python env (replaces conda).
 #
-# Follows the course repo's own install.sh (python 3.13 env, plain `pip install -r
-# requirements.txt`, arena-llm-context clone, VS Code settings), with uv + a venv at
-# /opt/arena-env instead of conda. On top of that it bakes in what a pod needs offline:
+# Follows the course repo's own install_uv.sh (python 3.13 uv venv with --seed, plain
+# `uv pip install -r requirements.txt`, ipykernel registered as "arena-env", VS Code settings),
+# with the venv at /opt/arena-env instead of <repo>/.venv. On top of that it bakes in what a pod needs offline:
 # system packages, every external subrepo the chapters clone, and the claude/codex CLIs.
 set -euo pipefail
 
@@ -41,23 +41,37 @@ echo "=== Cloning ${ARENA_REPO}@${ARENA_BRANCH} -> ${REPO_DIR} ==="
 [ "$REPO_DIR" = /root/ARENA_3.0 ] || [ -e /root/ARENA_3.0 ] || ln -s "$REPO_DIR" /root/ARENA_3.0
 
 # --- arena-env virtualenv (uv) ---
-# Mirrors the Python half of the repo's install.sh (python 3.13, upgrade pip/setuptools/wheel,
-# then a plain `-r requirements.txt`) with uv in place of conda + pip. requirements.txt carries
-# its own fixes now (ARENA forks of sae-vis/eindex, numpy>=2-compatible transformer_lens, CUDA
-# torch from PyPI), so no overrides or extra indexes here — if this resolve breaks, fix it
-# upstream rather than patching around it in the image.
+# Mirrors the Python half of the repo's install_uv.sh (`uv venv --seed --python 3.13`, then a
+# plain `uv pip install -r requirements.txt`, then register the "arena-env" Jupyter kernel).
+# requirements.txt carries its own fixes (ARENA forks of sae-vis/eindex, numpy>=2-compatible
+# transformer_lens, CUDA torch from PyPI), so no overrides or extra indexes here — if this
+# resolve breaks, fix it upstream rather than patching around it in the image.
 echo "=== Creating uv venv arena-env (python 3.13) at ${VENV} ==="
-uv venv --python 3.13 "$VENV"
+uv venv --seed --python 3.13 "$VENV"
 # shellcheck disable=SC1091
 source "$VENV/bin/activate"
 
-# `uv venv` doesn't ship pip; installing it (as install.sh upgrades it) means bare `pip` /
-# `pip show <pkg>` operate on arena-env without a `uv ` prefix.
+# --seed gives the venv pip (so bare `pip` / `pip show <pkg>` hit arena-env); also keep
+# setuptools/wheel present as earlier images (and the conda install.sh) had them.
 echo "=== Installing pip/setuptools/wheel into arena-env ==="
 uv pip install -U pip setuptools wheel
 
 echo "=== Installing ARENA requirements ==="
 uv pip install --no-cache-dir -r "$REPO_DIR/requirements.txt"
+
+# Jupyter kernel named "arena-env" (as install_uv.sh does), so notebooks pick it by name.
+python -m ipykernel install --user --name arena-env --display-name arena-env
+
+# --- Cap OpenMP/BLAS threads to the container's CPU quota ---
+# RunPod containers see every host core (64-344) but get a cgroup quota of ~5-15 CPUs, so torch
+# would start one thread per host core and CPU ops (e.g. t.linalg.eigh) run 10-100x slower. The
+# quota is only known at runtime, so a .pth in arena-env's site-packages runs arena_cpu_threads.py
+# at every interpreter start (python, jupyter kernels, scripts) and setdefault()s
+# OMP/MKL/OPENBLAS_NUM_THREADS = floor(quota). Explicitly-set env vars still win.
+echo "=== Installing arena_cpu_threads.pth into arena-env ==="
+SITE="$(python -c 'import sysconfig; print(sysconfig.get_paths()["purelib"])')"
+install -m644 "$(dirname "$0")/arena_cpu_threads.py" "$SITE/arena_cpu_threads.py"
+echo "import arena_cpu_threads" > "$SITE/arena_cpu_threads.pth"
 
 # --- Clone ALL external subrepos referenced by the ARENA chapters ---
 # These are cloned per-exercise by the course instructions; we bake them in so the image
